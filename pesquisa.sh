@@ -2,29 +2,36 @@
 
 # Função para autocompletar nomes de funções, aliases e git aliases
 _autocomplete_names() {
-	# Captura aliases do bash
+	# Capture Bash aliases correctly
 	local aliases=()
-	mapfile -t aliases < <(alias | sed 's/alias \(.*\)=.*/\1/')
+	mapfile -t aliases < <(alias | awk -F'=' '{print $1}' | sed 's/alias //')
 
-	# Captura funções do bash e do diretório ~/Shellscripts
+	# Capture Bash functions
 	local functions=()
 	mapfile -t functions < <(
 		declare -F | awk '{print $3}'
 		grep -h -o -E "^\s*function\s+([a-zA-Z0-9_]+)\s*\(\)" ~/.bashrc ~/Shellscripts/* 2>/dev/null | sed 's/.*function\s\+\([a-zA-Z0-9_]\+\).*/\1/'
 	)
 
-	# Captura git aliases
+	# Capture Git aliases correctly
 	local git_aliases=()
-	mapfile -t git_aliases < <(git config --get-regexp '^alias\.' | sed 's/^alias\.//')
+	mapfile -t git_aliases < <(git config --get-regexp '^alias\.' | awk '{print $1}' | sed 's/^alias\.//')
 
-	# Combina aliases, funções e git aliases em uma única lista
+	# Combine names
 	local names=("${aliases[@]}" "${functions[@]}" "${git_aliases[@]}")
 
 	# Gera a lista de sugestões para a autocompletação
 	COMPREPLY=()
-	while IFS= read -r suggestion; do
-		COMPREPLY+=("$suggestion")
-	done < <(compgen -W "${names[*]}" -- "${COMP_WORDS[1]}")
+	for name in "${names[@]}"; do
+		if [[ "$name" == "${COMP_WORDS[1]}"* ]]; then
+			COMPREPLY+=("$name")
+		fi
+	done
+
+	# Handle case where there is only one unique name and it matches the completion word
+	if [[ ${#COMPREPLY[@]} -eq 1 && "${COMPREPLY[0]}" == "${COMP_WORDS[1]}" ]]; then
+		COMPREPLY=() # Clear the suggestion
+	fi
 }
 
 # Função para abrir um arquivo no Neovim na linha correspondente ao alias ou função
