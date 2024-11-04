@@ -32,6 +32,9 @@ _autocomplete_names() {
 	if [[ ${#COMPREPLY[@]} -eq 1 && "${COMPREPLY[0]}" == "${COMP_WORDS[1]}" ]]; then
 		COMPREPLY=() # Clear the suggestion
 	fi
+
+	# Prevent Bash from treating an exact match as complete
+	compopt -o nospace
 }
 
 # Função para abrir um arquivo no Neovim na linha correspondente ao alias ou função
