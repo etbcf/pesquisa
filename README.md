@@ -11,6 +11,6 @@ It looks inside .bashrc, .gitconfig and a directory called Shellscripts that mus
 
 To source the script, it can be done temporarily by exporting it to PATH or permanently in .bashrc.
 
-![Project GIF showcase](Images/render1730518053182.gif)
+![Project GIF showcase](Images/baz.gif)
 
 #
