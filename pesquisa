@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Use the editor set in $EDITOR, defaulting to 'vim' if $EDITOR is not set
+EDITOR_CMD="${EDITOR:-nvim}"
+
 # Função para autocompletar nomes de funções, aliases e git aliases
 _autocomplete_names() {
 	# Capture Bash aliases correctly
@@ -37,8 +40,8 @@ _autocomplete_names() {
 	compopt -o nospace
 }
 
-# Função para abrir um arquivo no Neovim na linha correspondente ao alias ou função
-open_in_nvim() {
+# Função para abrir um arquivo no editor na linha correspondente ao alias ou função
+open_in_editor() {
 	local name="$1"
 	local line_number
 	local found=false
@@ -59,7 +62,7 @@ check_bash_alias() {
 	if grep -q "^alias $name=" ~/.bashrc; then
 		local line_number
 		line_number=$(grep -n "^alias $name=" ~/.bashrc | cut -d: -f1)
-		nvim "+$line_number" ~/.bashrc
+		"$EDITOR_CMD" "+$line_number" ~/.bashrc
 		found=true
 		return 0
 	fi
@@ -72,7 +75,7 @@ check_bash_function() {
 	if grep -s -q -E "^\s*function\s+$name\s*\(\)|^\s*$name\s*\(\)" ~/.bashrc 2>/dev/null; then
 		local line_number
 		line_number=$(grep -n -E "^\s*function\s+$name\s*\(\)|^\s*$name\s*\(\)" ~/.bashrc | cut -d: -f1)
-		nvim "+$line_number" ~/.bashrc
+		"$EDITOR_CMD" "+$line_number" ~/.bashrc
 		found=true
 		return 0
 	fi
@@ -90,7 +93,7 @@ check_shellscripts_function() {
 		match=$(grep -n -E "^\s*function\s+$name\s*\(\)|^\s*$name\s*\(\)" "$file_match" | head -n 1)
 		local line_number
 		line_number=$(echo "$match" | cut -d: -f1)
-		nvim "+$line_number" "$file_match"
+		"$EDITOR_CMD" "+$line_number" "$file_match"
 		found=true
 		return 0
 	fi
@@ -103,7 +106,7 @@ check_git_alias() {
 	if git config --get "alias.$name" >/dev/null; then
 		local line_number
 		line_number=$(grep -n "^\\s*${name} = " ~/.gitconfig | cut -d: -f1)
-		nvim "+$line_number" ~/.gitconfig
+		"$EDITOR_CMD" "+$line_number" ~/.gitconfig
 		found=true
 		return 0
 	fi
@@ -112,8 +115,9 @@ check_git_alias() {
 
 # Verifica se um argumento foi passado
 if [[ $# -eq 1 ]]; then
-	open_in_nvim "$1"
+	open_in_editor "$1"
 fi
 
 # Ativa a autocompletação para o comando 'pesquisa.sh'
-complete -F _autocomplete_names pesquisa.sh
+complete -F _autocomplete_names pesquisa
+
